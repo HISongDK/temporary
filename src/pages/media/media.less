@@ -1,0 +1,87 @@
+.media {
+	header {
+		display: flex;
+		justify-content: space-between;
+
+		.header_left {
+			.header_left_top {
+				font-size: 16px;
+
+				.iconfont {
+					margin-right: 10px;
+				}
+			}
+		}
+
+		.header_right {
+			display: flex;
+			align-items: center;
+
+			.icon-add-sy {
+				color: #1890ff;
+				font-size: 35px !important;
+				font-weight: normal;
+				margin-left: 15px;
+				cursor: pointer;
+			}
+
+			.ant-input-affix-wrapper {
+				border-radius: 10px;
+			}
+		}
+	}
+
+	main {
+		.operate_wrap {
+			display: flex;
+			justify-content: space-evenly;
+
+			.icon-bi {
+				font-weight: normal;
+				cursor: pointer;
+				transition: .2s;
+
+				&:hover {
+					color: #1890ff;
+				}
+			}
+
+			.icon-lajitong {
+				cursor: pointer;
+				transition: .2s;
+
+
+				&:hover {
+					color: red
+				}
+			}
+		}
+
+
+	}
+}
+
+.delete_modal {
+	.ant-modal-footer {
+		overflow: hidden;
+
+		button {
+			float: right;
+			margin-left: 8px !important;
+		}
+	}
+
+	.delete_media_wrap {
+		h3 {
+			text-indent: 15%;
+		}
+
+		p {
+			text-indent: 40%;
+		}
+
+		span {
+			color: red;
+		}
+	}
+}

@@ -1,0 +1,1 @@
+window.BASE_URL = "http://10.1.37.229:8080"

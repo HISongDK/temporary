@@ -1,0 +1,93 @@
+{
+  "id": "2721787",
+  "name": "宝安政数",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "19117697",
+      "name": "添加",
+      "font_class": "add-sy",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "565100",
+      "name": "新东方-刷新图标",
+      "font_class": "refresh",
+      "unicode": "e69a",
+      "unicode_decimal": 59034
+    },
+    {
+      "icon_id": "1180552",
+      "name": "图片",
+      "font_class": "font29",
+      "unicode": "e6ba",
+      "unicode_decimal": 59066
+    },
+    {
+      "icon_id": "1875842",
+      "name": "禁用",
+      "font_class": "jinyong",
+      "unicode": "e66b",
+      "unicode_decimal": 58987
+    },
+    {
+      "icon_id": "2198985",
+      "name": "日志",
+      "font_class": "log",
+      "unicode": "e73f",
+      "unicode_decimal": 59199
+    },
+    {
+      "icon_id": "3107210",
+      "name": "垃圾桶",
+      "font_class": "lajitong",
+      "unicode": "e6d0",
+      "unicode_decimal": 59088
+    },
+    {
+      "icon_id": "7235211",
+      "name": "用户",
+      "font_class": "yonghu",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "9059910",
+      "name": "媒体号",
+      "font_class": "meitihao",
+      "unicode": "e62d",
+      "unicode_decimal": 58925
+    },
+    {
+      "icon_id": "10869558",
+      "name": "报纸",
+      "font_class": "baozhi",
+      "unicode": "e645",
+      "unicode_decimal": 58949
+    },
+    {
+      "icon_id": "15538049",
+      "name": "图片 ",
+      "font_class": "tupian",
+      "unicode": "e648",
+      "unicode_decimal": 58952
+    },
+    {
+      "icon_id": "17277394",
+      "name": "笔",
+      "font_class": "bi",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "22934094",
+      "name": "消 息",
+      "font_class": "xiaoxi",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    }
+  ]
+}
