@@ -41,6 +41,8 @@ function beforeUpload(file) {
 }
 
 function Slider() {
+	/* 查询参数 */
+
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
@@ -76,16 +78,18 @@ function Slider() {
 	const [loading, setLoading] = useState(false);
 	const [imageUrl, setImageUrl] = useState('');
 	const handleChange = info => {
+		console.log("链接",info);
 		if (info.file.status === 'uploading') {
 			setLoading(true);
 			return;
 		}
 		if (info.file.status === 'done') {
 			// Get this url from response in real world.
-			getBase64(info.file.originFileObj, imageUrl => {
-				setLoading(false);
-				setImageUrl(imageUrl);
-			});
+			// getBase64(info.file.originFileObj, imageUrl => {
+			// 	setLoading(false);
+			// 	setImageUrl(imageUrl);
+			// });
+			setImageUrl("http://localhost:8080\\"+info.file.response.path);
 		}
 	};
 
@@ -247,21 +251,56 @@ function Slider() {
 			align: 'center',
 		},
 		{
+			title: () => (
+				<>
+					状态
+					<Dropdown
+						trigger="click"
+						overlay={
+							<Menu>
+								{[
+									{ label: '使用中', key: 'using' },
+									{ label: '未使用', key: 'unUsing' },
+								].map(item => (
+									<Menu.Item
+										onClick={item => {
+											handleClickTime(item);
+										}}
+										key={item.key}
+									>
+										{item.label}
+									</Menu.Item>
+								))}
+							</Menu>
+						}
+					>
+						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+					</Dropdown>
+				</>
+			),
+			dataIndex: 'name',
+			key: 'status',
+			align: 'center',
+		},
+		{
 			title: '操作',
 			align: 'center',
-
 			render: (t, r, i) => {
 				// console.log(t, r, i);
 				return (
 					<div className="operate_wrap">
 						<span
 							onClick={() => handleClickEdit(t)}
-							className="edit iconfont icon-bi"
+							className="edit iconfont icon-tupian"
 						></span>
 						<span
+							onClick={() => handleClickEdit(t)}
+							className="edit iconfont icon-bi"
+						></span>
+						{/* <span
 							onClick={() => handleClickChangeStatus(t)}
 							className={`iconfont icon-${t.age === 32 ? 'jinyong' : 'refresh'}`}
-						></span>
+						></span> */}
 						<span
 							onClick={() => handleClickDelete(t)}
 							className="delete iconfont icon-lajitong"
@@ -287,6 +326,8 @@ function Slider() {
 		});
 	};
 
+	const [isImgUsable,setIsImgUsable] = useState(false)
+
 	// 确认删除对话框
 	const [isShowDelete, setIsShowDelete] = useState(false); // 是否展示
 	const [currentMediaData, setCurrentMediaData] = useState({}); // 当前媒体数据
@@ -301,12 +342,7 @@ function Slider() {
 	const HandleDeleteMedia = () => {
 		//  TODO:确认删除当前媒体
 	};
-	// 切换报道禁用使用状态
-	// const [isDisableReport,setIsDisableReport] = useState(false)
-	// TODO: 报道禁用启用状态不能本地模拟 用接口数据标识判断更改
-	const handleClickChangeStatus = item => {
-		console.log('启用禁用报道按钮：', item);
-	};
+
 	// 改变每页条数
 	const [currentPageSize, setCurretPageSize] = useState(10);
 
@@ -399,9 +435,10 @@ function Slider() {
 							listType="picture-card"
 							className="avatar-uploader"
 							showUploadList={false}
-							action="upload/"
+							action="http://localhost:8080/upload/"
 							// beforeUpload={beforeUpload}
 							onChange={handleChange}
+							onRemove={()=>new Promise().resolve(true)}
 						>
 							{imageUrl ? (
 								<img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
@@ -409,8 +446,7 @@ function Slider() {
 								uploadButton
 							)}
 						</Upload>
-						点击上传图片
-						<p>图片规格请参照标准制作：240px，大小不超过2M</p>
+
 					</Form.Item>
 
 					<Form.Item
@@ -418,17 +454,25 @@ function Slider() {
 						name="link"
 						rules={[{ required: true, message: '请输入报道链接' }]}
 					>
-						<Switch checkedChildren="启用" unCheckedChildren="禁用" defaultChecked onChange={()=>{}}/>
+						<Switch
+							checkedChildren="启用"
+							unCheckedChildren="禁用"
+							// defaultChecked={false}
+							checked={isImgUsable}
+							onChange={(status) => setIsImgUsable(status)}
+						/>
 					</Form.Item>
-					{
+					{isImgUsable ? (
 						<Form.Item
-							label="发布时间"
+							label="请选择排序位置"
 							name="time"
-							rules={[{ required: true, message: '请输入发布时间' }]}
+							rules={[{ required: true, message: '请选择轮播图位置' }]}
 						>
-							
+							<Select>
+								<option value=""></option>
+							</Select>
 						</Form.Item>
-					}
+					) : null}
 				</Form>
 			</Modal>
 			<Modal
