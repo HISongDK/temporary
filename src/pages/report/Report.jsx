@@ -1,10 +1,43 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useReducer } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, DatePicker } from 'antd';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
 import './report.less';
 
 const { Option } = Select;
 function Report() {
+	/* 查询参数 */
+	const reducer = (state, action) => {
+		switch (action.type) {
+			case 'text':
+				return {
+					...state,
+					text: action.payload,
+				};
+			case 'type':
+				return {
+					...state,
+					type: action.payload,
+				};
+			case 'time':
+				return {
+					...state,
+					time: action.payload,
+				};
+			default:
+				return state;
+		}
+	};
+	const initialParams = {
+		text: '',
+		type: '',
+		time: '',
+	};
+	const [params, dispatchParams] = useReducer(reducer, initialParams);
+
+	useEffect(() => {
+		// TODO: 筛选参数改动 请求表格数据
+		console.log(params);
+	}, [params]);
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
@@ -42,6 +75,8 @@ function Report() {
 
 	// 表格
 	const [dataSource, setDataSource] = useState([]);
+	const [isShowLoading, setIsShowLoading] = useState(false);
+
 	for (let index = 0; index < 100; index++) {
 		dataSource.push({
 			key: index,
@@ -102,9 +137,11 @@ function Report() {
 	];
 	const handleClickType = item => {
 		console.log('点击筛选媒体类型：', item);
+		dispatchParams({type:'type',payload:item.key})
 	};
 	const handleClickTime = item => {
 		console.log('点击筛选发布时间：', item);
+		dispatchParams({type:'time',payload:item.key})
 	};
 
 	const columns = [
@@ -133,7 +170,7 @@ function Report() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu>
+							<Menu selectedKeys={[params.type || 'all']}>
 								{mediaType.map(item => (
 									<Menu.Item
 										onClick={item => {
@@ -168,7 +205,7 @@ function Report() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu>
+							<Menu selectedKeys={[params.time || 'all']}>
 								{postTime.map(item => (
 									<Menu.Item
 										onClick={item => {
@@ -284,6 +321,7 @@ function Report() {
 					columns={columns}
 					size="small"
 					bordered
+					loading={isShowLoading}
 					rowSelection={{
 						onChange: (selectedRowKeys, selectedRows) => {
 							console.log('表格选中数据', selectedRowKeys, selectedRows);

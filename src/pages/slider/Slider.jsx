@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useReducer, useEffect } from 'react';
 import {
 	Modal,
 	Table,
@@ -8,7 +8,6 @@ import {
 	message,
 	Dropdown,
 	Menu,
-	DatePicker,
 	Upload,
 	Switch,
 } from 'antd';
@@ -42,13 +41,53 @@ function beforeUpload(file) {
 
 function Slider() {
 	/* 查询参数 */
+	const reducer = (state, action) => {
+		switch (action.type) {
+			case 'text':
+				return {
+					...state,
+					text: action.payload,
+				};
+			case 'type':
+				return {
+					...state,
+					type: action.payload,
+				};
+			case 'time':
+				return {
+					...state,
+					time: action.payload,
+				};
+			case 'status':
+				return {
+					...state,
+					status: action.payload,
+				};
+			default:
+				return state;
+		}
+	};
+	const initialParams = {
+		text: '',
+		type: '',
+		time: '',
+		status: '',
+	};
+	const [params, dispatchParams] = useReducer(reducer, initialParams);
+
+	useEffect(() => {
+		// TODO: 筛选参数改动 请求表格数据
+		console.log(params);
+	}, [params]);
 
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
 	};
+
 	/* 增改对话框 */
 	const [isShowAdd, setIsShowAdd] = useState(false);
+	const [isImgUsable, setIsImgUsable] = useState(false);
 	const addMediaRef = useRef(null);
 	const getMediaRef = useCallback(node => {
 		// 动态获取每次重载的 增改 对话框 DOM
@@ -78,7 +117,7 @@ function Slider() {
 	const [loading, setLoading] = useState(false);
 	const [imageUrl, setImageUrl] = useState('');
 	const handleChange = info => {
-		console.log("链接",info);
+		console.log('链接', info);
 		if (info.file.status === 'uploading') {
 			setLoading(true);
 			return;
@@ -89,20 +128,23 @@ function Slider() {
 			// 	setLoading(false);
 			// 	setImageUrl(imageUrl);
 			// });
-			setImageUrl("http://localhost:8080\\"+info.file.response.path);
+			setImageUrl('http://localhost:8080\\' + info.file.response.path);
 		}
 	};
 
 	const uploadButton = (
 		<div>
 			{loading ? <LoadingOutlined /> : <PlusOutlined />}
-			<div style={{ marginTop: 8 }}>Upload</div>
+			{/* <div style={{ marginTop: 8 }}>Upload</div> */}
 		</div>
 	);
 
-	// 表格
+	/* 表格 */
 	const [dataSource, setDataSource] = useState([]);
-	for (let index = 0; index < 100; index++) {
+	const [isShowLoading, setIsShowLoading] = useState(false);
+	// 改变每页条数
+	const [currentPageSize, setCurretPageSize] = useState(10);
+	for (let index = 0; index < 15; index++) {
 		dataSource.push({
 			key: index,
 			name: '胡彦斌',
@@ -129,8 +171,12 @@ function Slider() {
 			key: '3',
 		},
 		{
-			label: '其它',
+			label: '区媒',
 			key: '4',
+		},
+		{
+			label: '其它',
+			key: '5',
 		},
 	];
 	const year = new Date().getFullYear();
@@ -162,9 +208,15 @@ function Slider() {
 	];
 	const handleClickType = item => {
 		console.log('点击筛选媒体类型：', item);
+		dispatchParams({ type: 'type', payload: item.key });
 	};
 	const handleClickTime = item => {
 		console.log('点击筛选发布时间：', item);
+		dispatchParams({ type: 'time', payload: item.key });
+	};
+	const handleClickStatus = item => {
+		console.log('点击筛选状态：', item);
+		dispatchParams({ type: 'status', payload: item.key });
 	};
 
 	const columns = [
@@ -193,7 +245,10 @@ function Slider() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu>
+							<Menu
+								// TODO: 默认选中项参数字段可能需调整
+								selectedKeys={[params.type || 'all']}
+							>
 								{mediaType.map(item => (
 									<Menu.Item
 										onClick={item => {
@@ -228,7 +283,7 @@ function Slider() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu>
+							<Menu selectedKeys={[params.time || 'all']}>
 								{postTime.map(item => (
 									<Menu.Item
 										onClick={item => {
@@ -257,14 +312,15 @@ function Slider() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu>
+							<Menu selectedKeys={[params.status || 'all']}>
 								{[
+									{ label: '全部', key: 'all' },
 									{ label: '使用中', key: 'using' },
 									{ label: '未使用', key: 'unUsing' },
 								].map(item => (
 									<Menu.Item
 										onClick={item => {
-											handleClickTime(item);
+											handleClickStatus(item);
 										}}
 										key={item.key}
 									>
@@ -290,7 +346,7 @@ function Slider() {
 				return (
 					<div className="operate_wrap">
 						<span
-							onClick={() => handleClickEdit(t)}
+							onClick={() => handleClickPreview(t)}
 							className="edit iconfont icon-tupian"
 						></span>
 						<span
@@ -326,7 +382,18 @@ function Slider() {
 		});
 	};
 
-	const [isImgUsable,setIsImgUsable] = useState(false)
+	// 图片预览对话框
+	const [isShowPreview, setIsShowPreview] = useState(false);
+	const [currentPreviewImg, setCurrentPreviewImg] = useState('');
+	const handleClickPreview = data => {
+		console.log(data);
+		setIsShowPreview(true);
+		// TODO:获取当前行图片链接
+		setCurrentPreviewImg('');
+	};
+	const handleCancelPreviewModal = () => {
+		setIsShowPreview(false);
+	};
 
 	// 确认删除对话框
 	const [isShowDelete, setIsShowDelete] = useState(false); // 是否展示
@@ -341,10 +408,8 @@ function Slider() {
 	};
 	const HandleDeleteMedia = () => {
 		//  TODO:确认删除当前媒体
+		console.log('当前删除数据行', currentMediaData);
 	};
-
-	// 改变每页条数
-	const [currentPageSize, setCurretPageSize] = useState(10);
 
 	return (
 		<div className="report">
@@ -376,6 +441,7 @@ function Slider() {
 					columns={columns}
 					size="small"
 					bordered
+					loading={isShowLoading}
 					rowSelection={{
 						onChange: (selectedRowKeys, selectedRows) => {
 							console.log('表格选中数据', selectedRowKeys, selectedRows);
@@ -435,10 +501,11 @@ function Slider() {
 							listType="picture-card"
 							className="avatar-uploader"
 							showUploadList={false}
+							maxCount={1}
 							action="http://localhost:8080/upload/"
 							// beforeUpload={beforeUpload}
 							onChange={handleChange}
-							onRemove={()=>new Promise().resolve(true)}
+							onRemove={() => new Promise().resolve(true)}
 						>
 							{imageUrl ? (
 								<img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
@@ -446,20 +513,19 @@ function Slider() {
 								uploadButton
 							)}
 						</Upload>
-
 					</Form.Item>
 
 					<Form.Item
 						label="设定状态及位置"
-						name="link"
-						rules={[{ required: true, message: '请输入报道链接' }]}
+						name="status"
+						rules={[{ required: true, message: '请选择图片使用状态' }]}
 					>
 						<Switch
 							checkedChildren="启用"
 							unCheckedChildren="禁用"
-							// defaultChecked={false}
+							defaultChecked={false}
 							checked={isImgUsable}
-							onChange={(status) => setIsImgUsable(status)}
+							onChange={status => setIsImgUsable(status)}
 						/>
 					</Form.Item>
 					{isImgUsable ? (
@@ -489,22 +555,31 @@ function Slider() {
 			>
 				<div className="delete_media_wrap">
 					<h3>是否确定删除</h3>
-					<p>
-						报道标题：<span>{currentMediaData.name}</span>
-					</p>
-					<p>
-						媒体名称及类型：
-						<span>
-							{currentMediaData.name}-{currentMediaData.name}
-						</span>
-					</p>
-					<p>
-						报道链接：<span>{currentMediaData.name}</span>
-					</p>
-					<p>
-						发布时间：<span>{currentMediaData.name}</span>
-					</p>
+					<img
+						src={
+							currentPreviewImg ||
+							'https://www.bing.com/th?id=OHR.MineBay_ZH-CN4962056960_1920x1080.jpg&rf=LaDigue_1920x1080.jpg'
+						}
+						alt=""
+						className="picture_preview"
+					/>
 				</div>
+			</Modal>
+			<Modal
+				title={'查看轮播图'}
+				footer={null}
+				visible={isShowPreview}
+				onCancel={handleCancelPreviewModal}
+				centered
+			>
+				<img
+					src={
+						currentPreviewImg ||
+						'https://www.bing.com/th?id=OHR.MineBay_ZH-CN4962056960_1920x1080.jpg&rf=LaDigue_1920x1080.jpg'
+					}
+					alt=""
+					className="picture_preview"
+				/>
 			</Modal>
 		</div>
 	);

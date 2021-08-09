@@ -39,6 +39,8 @@ function Media() {
 
 	// 表格
 	const [dataSource, setDataSource] = useState([]);
+	const [isShowLoading, setIsShowLoading] = useState(false);
+
 	for (let index = 0; index < 100; index++) {
 		dataSource.push({
 			key: index,
@@ -205,6 +207,7 @@ function Media() {
 					columns={columns}
 					size="small"
 					bordered
+					loading={isShowLoading}
 					rowSelection={{
 						onChange: (selectedRowKeys, selectedRows) => {
 							console.log('表格选中数据', selectedRowKeys, selectedRows);
