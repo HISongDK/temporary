@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect, useReducer } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, DatePicker } from 'antd';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
+import { debounce } from '@/util/debounce.js';
 import './report.less';
 
 const { Option } = Select;
@@ -41,6 +42,7 @@ function Report() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
+		dispatchParams({ type: 'text', payload: e.target.value });
 	};
 	/* 增改报道对话框 */
 	const [isShowAdd, setIsShowAdd] = useState(false);
@@ -137,11 +139,11 @@ function Report() {
 	];
 	const handleClickType = item => {
 		console.log('点击筛选媒体类型：', item);
-		dispatchParams({type:'type',payload:item.key})
+		dispatchParams({ type: 'type', payload: item.key });
 	};
 	const handleClickTime = item => {
 		console.log('点击筛选发布时间：', item);
-		dispatchParams({type:'time',payload:item.key})
+		dispatchParams({ type: 'time', payload: item.key });
 	};
 
 	const columns = [
@@ -184,7 +186,13 @@ function Report() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.type && params.type !== 'all'
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
@@ -219,7 +227,13 @@ function Report() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.time && params.time !== 'all'
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
@@ -303,7 +317,7 @@ function Report() {
 				</div>
 				<div className="header_right">
 					<Input
-						onChange={handleChangeSearch}
+						onChange={debounce(handleChangeSearch, 500)}
 						allowClear
 						size="large"
 						placeholder="请输入报道或媒体名称"

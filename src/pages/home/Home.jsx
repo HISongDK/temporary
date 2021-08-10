@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { HashRouter, Redirect, Route, Switch } from 'react-router-dom';
 import { Layout, Dropdown, Menu } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
@@ -8,10 +8,14 @@ import Report from '@/pages/report/Report.jsx';
 import Slider from '@/pages/slider/Slider.jsx';
 import Log from '@/pages/log/Log.jsx';
 import './main.less';
+import { UserContext } from '../../util/context';
+
 
 const { Header, Content, Sider } = Layout;
 
 function Home() {
+	const user = useContext(UserContext)
+	console.log(user,"context\n\n\n\n\n");
 	const [isNavFold, setIsNavFold] = useState(false); // 导航栏展开收起
 
 	// 用户点击下拉框

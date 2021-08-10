@@ -1,22 +1,13 @@
 import React, { useState, useRef, useCallback, useReducer, useEffect } from 'react';
-import {
-	Modal,
-	Table,
-	Input,
-	Form,
-	Select,
-	message,
-	Dropdown,
-	Menu,
-	Upload,
-	Switch,
-} from 'antd';
+import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, Upload, Switch } from 'antd';
 import {
 	SearchOutlined,
 	CaretDownOutlined,
 	PlusOutlined,
 	LoadingOutlined,
 } from '@ant-design/icons';
+import ImgCrop from 'antd-img-crop';
+import { debounce } from '@/util/debounce.js';
 import './slider.less';
 
 const { Option } = Select;
@@ -28,15 +19,15 @@ function getBase64(img, callback) {
 }
 
 function beforeUpload(file) {
-	const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-	if (!isJpgOrPng) {
-		message.error('You can only upload JPG/PNG file!');
-	}
+	// const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+	// if (!isJpgOrPng) {
+	// 	message.error('You can only upload JPG/PNG file!');
+	// }
 	const isLt2M = file.size / 1024 / 1024 < 2;
 	if (!isLt2M) {
 		message.error('请上传 2MB 以下的图片!');
 	}
-	return isJpgOrPng && isLt2M;
+	return isLt2M;
 }
 
 function Slider() {
@@ -83,6 +74,7 @@ function Slider() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
+		dispatchParams({ type: 'text', payload: e.target.value });
 	};
 
 	/* 增改对话框 */
@@ -95,9 +87,11 @@ function Slider() {
 	}, []);
 	const handleCancelAddModal = () => {
 		setIsShowAdd(false);
+		setImageUrl('');
 	};
 
 	const HandleAddOrChangeMedia = () => {
+		console.log(addMediaRef.current.getFieldInstance('file'));
 		addMediaRef.current
 			.validateFields()
 			.then(res => {
@@ -123,14 +117,35 @@ function Slider() {
 			return;
 		}
 		if (info.file.status === 'done') {
-			// Get this url from response in real world.
 			// getBase64(info.file.originFileObj, imageUrl => {
-			// 	setLoading(false);
+			setLoading(false);
 			// 	setImageUrl(imageUrl);
 			// });
-			setImageUrl('http://localhost:8080\\' + info.file.response.path);
+			// Get this url from response in real world.
+			setImageUrl('http://localhost:8080' + info.file.response.url);
 		}
 	};
+	const onPreview = async file => {
+		let src = file.url;
+		if (!src) {
+			src = await new Promise(resolve => {
+				const reader = new FileReader();
+				reader.readAsDataURL(file.originFileObj);
+				reader.onload = () => resolve(reader.result);
+			});
+		}
+		const image = new Image();
+		image.src = src;
+		const imgWindow = window.open(src);
+		imgWindow.document.write(image.outerHTML);
+	};
+	// 图片上传成功后改变 file 输入框的值
+	useEffect(() => {
+		addMediaRef.current &&
+			addMediaRef.current.setFieldsValue({
+				file: imageUrl,
+			});
+	}, [imageUrl]);
 
 	const uploadButton = (
 		<div>
@@ -262,7 +277,13 @@ function Slider() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.type && params.type !== 'all'
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
@@ -297,7 +318,13 @@ function Slider() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.time && params.time !== 'all'
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
@@ -330,7 +357,13 @@ function Slider() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.status && params.status !== 'all'
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
@@ -423,7 +456,7 @@ function Slider() {
 				</div>
 				<div className="header_right">
 					<Input
-						onChange={handleChangeSearch}
+						onChange={debounce(handleChangeSearch, 500)}
 						allowClear
 						size="large"
 						placeholder="请输入报道或媒体名称"
@@ -470,6 +503,7 @@ function Slider() {
 				title="增改轮播图"
 				cancelText="取消"
 				okText="确定"
+				maskClosable={false}
 				centered
 				destroyOnClose
 			>
@@ -491,28 +525,43 @@ function Slider() {
 						（自动匹配无需填写）
 						{/* <p>（自动匹配无需填写）</p> */}
 					</Form.Item>
-					<Form.Item
-						label="上传图片"
-						name="upload"
-						rules={[{ required: true, message: '请上传图片' }]}
-					>
-						<Upload
-							name="avatar"
-							listType="picture-card"
-							className="avatar-uploader"
-							showUploadList={false}
-							maxCount={1}
-							action="http://localhost:8080/upload/"
-							// beforeUpload={beforeUpload}
-							onChange={handleChange}
-							onRemove={() => new Promise().resolve(true)}
+					<Form.Item label="上传图片" required>
+						<Form.Item
+							noStyle
+							name="file"
+							rules={[{ required: true, message: '请上传图片' }]}
 						>
-							{imageUrl ? (
-								<img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
-							) : (
-								uploadButton
-							)}
-						</Upload>
+							<Input type="hidden" />
+						</Form.Item>
+						<ImgCrop
+							aspect={360 / 193}
+							quality={1}
+							modalTitle="请裁剪轮播图显示尺寸"
+							modalOk="裁剪"
+							modalCancel="取消"
+						>
+							<Upload
+								listType="picture-card"
+								className="avatar-uploader"
+								// showUploadList={false}
+								maxCount={1}
+								action="http://localhost:8080/upload/"
+								beforeUpload={beforeUpload}
+								onPreview={onPreview}
+								onChange={handleChange}
+								onDrop={handleChange}
+								showUploadList={{
+									showPreviewIcon: true,
+								}}
+								// onRemove={() => new Promise().resolve(true)}
+							>
+								{imageUrl ? (
+									<img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
+								) : (
+									<span className="iconfont icon-zhaoxiangji"></span>
+								)}
+							</Upload>
+						</ImgCrop>
 					</Form.Item>
 
 					<Form.Item

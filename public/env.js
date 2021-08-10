@@ -1,1 +1,1 @@
-window.BASE_URL = "http://10.1.37.229:8080"
+window.BASE_URL = "http://10.99.84.49/bazsj/news-manager/"
