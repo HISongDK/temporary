@@ -1,49 +1,99 @@
-import React, { useState, useRef, useCallback, useEffect, useReducer } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useReducer, useContext } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, DatePicker } from 'antd';
+import moment from 'moment';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
-import { debounce } from '@/util/debounce.js';
 import './report.less';
+import { debounce } from '@/util/debounce.js';
+import { UserContext } from '../../util/context';
+import { mediaQuery, newsQuery, newsAdd, newsUpdate } from '../../api';
 
 const { Option } = Select;
 function Report() {
+	/* 用户信息 */
+	const user = useContext(UserContext);
+	console.log(user);
 	/* 查询参数 */
 	const reducer = (state, action) => {
 		switch (action.type) {
 			case 'text':
 				return {
 					...state,
-					text: action.payload,
+					keyword: action.payload,
+					page: 0,
 				};
 			case 'type':
 				return {
 					...state,
-					type: action.payload,
+					mediaType: action.payload,
+					page: 0,
 				};
 			case 'time':
 				return {
 					...state,
-					time: action.payload,
+					date: action.payload,
+					page: 0,
+				};
+			case 'page':
+				return {
+					...state,
+					page: action.payload,
+				};
+			case 'size':
+				return {
+					...state,
+					size: action.payload,
+					page: 0,
 				};
 			default:
 				return state;
 		}
 	};
 	const initialParams = {
-		text: '',
-		type: '',
-		time: '',
+		keyword: '',
+		mediaType: '',
+		date: '',
+		page: 0,
+		size: 10,
 	};
 	const [params, dispatchParams] = useReducer(reducer, initialParams);
-
+	const [totalNum, setTotalNum] = useState('');
+	const totalNumRef = useRef(null); // 左上角总数
+	const [forceUpdate, setForceUpdate] = useState(0); // 操作后更新表格
 	useEffect(() => {
-		// TODO: 筛选参数改动 请求表格数据
+		// 获取表格数据
 		console.log(params);
-	}, [params]);
+
+		setIsShowLoading(true);
+		async function getTabledata() {
+			let res = await newsQuery(params);
+			console.log(res);
+			if (totalNumRef.current === null) {
+				totalNumRef.current = res.totalElements;
+			}
+			setTotalNum(res.totalElements);
+			setDataSource(res.content);
+			setIsShowLoading(false);
+		}
+		getTabledata();
+	}, [params, forceUpdate]);
+
+	// 获取所有媒体
+	const [allMedia, setAllMedia] = useState([]);
+	useEffect(() => {
+		async function getMedia() {
+			let res = await mediaQuery();
+			console.log('所有媒体', res.content);
+			setAllMedia(res.content);
+		}
+		getMedia();
+	}, []);
+
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
 		dispatchParams({ type: 'text', payload: e.target.value });
 	};
+
 	/* 增改报道对话框 */
 	const [isShowAdd, setIsShowAdd] = useState(false);
 	const addMediaRef = useRef(null);
@@ -53,21 +103,71 @@ function Report() {
 	}, []);
 	const handleCancelAddModal = () => {
 		setIsShowAdd(false);
+		setCurrentMediaType('');
 	};
+
+	// 媒体选择
+	const [currentMediaType, setCurrentMediaType] = useState(''); // 保存选中、回显媒体信息
+	const handleSelectMedia = (id, option) => {
+		if (id) {
+			let mediaName = option.children;
+			let key = allMedia.filter(item => item.id === id)[0]['mediaType'];
+			let label = mediaType.filter(item => item.key === key)[0]['label'];
+			setCurrentMediaType(state => ({ ...state, mediaName, key, label }));
+		} else {
+			setCurrentMediaType('');
+		}
+	};
+
 	// 日期选择
 	const handleTimeChange = (date, dateString) => {
 		console.log(date, dateString);
 	};
+	// 确定
+	const [modalType, setModalType] = useState('');
 	const HandleAddOrChangeMedia = () => {
 		addMediaRef.current
 			.validateFields()
 			.then(res => {
 				console.log(res);
-
-				// TODO: 添加接口
-				if (200) {
-					message.success('添加成功', 1);
-					setIsShowAdd(false);
+				let params;
+				switch (modalType) {
+					case 'add':
+						params = [
+							{
+								title: res.title,
+								mediaId: res.mediaId,
+								media: currentMediaType.mediaName,
+								mediaType: currentMediaType.key,
+								newsDate: res.time.format('YYYY-MM-DD'),
+								url: res.link,
+								enableFlag: 1,
+								publishFlag: 1,
+								creator: user.userId,
+							},
+						];
+						addNews(params);
+						break;
+					case 'change':
+						console.log('不是change么');
+						params = [
+							{
+								id: currentMediaType.id,
+								title: res.title,
+								mediaId: res.mediaId,
+								media: currentMediaType.mediaName,
+								mediaType: currentMediaType.key,
+								newsDate: res.time.format('YYYY-MM-DD'),
+								url: res.link,
+								enableFlag: 1,
+								publishFlag: 1,
+								updator: user.userId,
+							},
+						];
+						console.log(params);
+						updateNews(params);
+						break;
+					default:
 				}
 			})
 			.catch(err => {
@@ -75,46 +175,80 @@ function Report() {
 			});
 	};
 
+	// 新增
+	async function addNews(params) {
+		let res = await newsAdd(params);
+		console.log(res);
+		message.success('添加成功', 1);
+		setIsShowAdd(false);
+		setForceUpdate(count => count + 1);
+	}
+	// 删改
+	async function updateNews(params) {
+		let res = await newsUpdate(params);
+		console.log(res);
+		if (modalType === 'change') {
+			message.success('修改报道成功', 1);
+			setIsShowAdd(false);
+		} else if (modalType === 'delete') {
+			message.success('删除报道成功', 1);
+			setIsShowDelete(false);
+		} else if (modalType === 'publishStatus') {
+			// TODO: 弹窗状态判断有Bug
+			if (currentPublishStatus === 1) {
+				message.success('启用报道成功', 2);
+			}
+			if (currentPublishStatus === 0) {
+				message.success('禁用报道成功', 2);
+			}
+		}
+		setForceUpdate(count => count + 1);
+	}
+
 	// 表格
 	const [dataSource, setDataSource] = useState([]);
 	const [isShowLoading, setIsShowLoading] = useState(false);
 
-	for (let index = 0; index < 100; index++) {
-		dataSource.push({
-			key: index,
-			name: '胡彦斌',
-			age: 32,
-			address: '西湖区湖底公园1号',
-		});
-	}
+	// for (let index = 0; index < 100; index++) {
+	// 	dataSource.push({
+	// 		key: index,
+	// 		name: '胡彦斌',
+	// 		age: 32,
+	// 		address: '西湖区湖底公园1号',
+	// 	});
+	// }
 
 	const mediaType = [
 		{
 			label: '全部',
-			key: 'all',
+			key: '',
 		},
 		{
 			label: '央媒',
-			key: '1',
+			key: 1,
 		},
 		{
 			label: '省媒',
-			key: '2',
+			key: 2,
 		},
 		{
 			label: '市媒',
-			key: '3',
+			key: 3,
+		},
+		{
+			label: '区媒',
+			key: 4,
 		},
 		{
 			label: '其它',
-			key: '4',
+			key: 5,
 		},
 	];
 	const year = new Date().getFullYear();
 	const postTime = [
 		{
 			label: '全部',
-			key: 'all',
+			key: '',
 		},
 		{
 			label: year,
@@ -149,21 +283,23 @@ function Report() {
 	const columns = [
 		{
 			title: '报道ID',
-			dataIndex: 'name',
-			key: 'name',
+			dataIndex: 'id',
+			key: 'id',
 			align: 'center',
 		},
 		{
 			title: '报道标题',
-			dataIndex: 'key',
-			key: 'age',
+			dataIndex: 'title',
+			key: 'title',
 			align: 'center',
+			// width: 300,
 		},
 		{
 			title: '媒体名称',
-			dataIndex: 'key',
-			key: 'age',
+			dataIndex: 'media',
+			key: 'media',
 			align: 'center',
+			width: 120,
 		},
 		{
 			title: () => (
@@ -172,7 +308,7 @@ function Report() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu selectedKeys={[params.type || 'all']}>
+							<Menu selectedKeys={[params.mediaType]}>
 								{mediaType.map(item => (
 									<Menu.Item
 										onClick={item => {
@@ -188,7 +324,7 @@ function Report() {
 					>
 						<CaretDownOutlined
 							style={
-								params.type && params.type !== 'all'
+								params.mediaType
 									? { marginLeft: '10px', color: '#1890ff' }
 									: { marginLeft: '10px' }
 							}
@@ -196,14 +332,18 @@ function Report() {
 					</Dropdown>
 				</>
 			),
-			dataIndex: 'address',
-			key: 'address',
+			width: 120,
+			dataIndex: 'mediaType',
+			key: 'mediaType',
 			align: 'center',
+			render: text => mediaType.filter(item => item.key === text)[0]['label'],
 		},
 		{
 			title: '报道链接',
-			dataIndex: 'address',
-			key: 'address',
+			// width: 350,
+			ellipsis: true,
+			dataIndex: 'url',
+			key: 'url',
 			align: 'center',
 		},
 		{
@@ -213,7 +353,7 @@ function Report() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu selectedKeys={[params.time || 'all']}>
+							<Menu selectedKeys={[params.date]}>
 								{postTime.map(item => (
 									<Menu.Item
 										onClick={item => {
@@ -229,7 +369,7 @@ function Report() {
 					>
 						<CaretDownOutlined
 							style={
-								params.time && params.time !== 'all'
+								params.date
 									? { marginLeft: '10px', color: '#1890ff' }
 									: { marginLeft: '10px' }
 							}
@@ -237,14 +377,15 @@ function Report() {
 					</Dropdown>
 				</>
 			),
-			dataIndex: 'address',
-			key: 'address',
+			dataIndex: 'newsDate',
+			key: 'newsDate',
 			align: 'center',
+			width: 120,
 		},
 		{
 			title: '操作',
 			align: 'center',
-
+			width: 100,
 			render: (t, r, i) => {
 				// console.log(t, r, i);
 				return (
@@ -255,7 +396,7 @@ function Report() {
 						></span>
 						<span
 							onClick={() => handleClickChangeStatus(t)}
-							className={`iconfont icon-${t.age === 32 ? 'jinyong' : 'refresh'}`}
+							className={`iconfont icon-${t.publishFlag ? 'jinyong' : 'refresh'}`}
 						></span>
 						<span
 							onClick={() => handleClickDelete(t)}
@@ -271,39 +412,85 @@ function Report() {
 	const handleClickEdit = data => {
 		console.log('编辑当前行', data);
 		setIsShowAdd(true);
+		setModalType('change');
 
-		console.log('点击时是否获取到Form', addMediaRef);
+		let mediaName = data.media;
+		let key = data.mediaType;
+		let label = mediaType.filter(item => item.key === key)[0]['label'];
+
+		console.log(data.id);
+		setCurrentMediaType({
+			mediaName,
+			key,
+			label,
+			id: data.id, // 保存当前行新闻 id ，作为删改参数
+		});
+
+		// console.log('点击时是否获取到Form', addMediaRef);
 		setTimeout(() => {
 			addMediaRef.current &&
 				addMediaRef.current.setFieldsValue({
-					mediaName: data.name,
+					title: data.title,
+					mediaId: data.mediaId,
 					mediaType: data.address,
+					link: data.url,
+					time: moment(data.newsDate),
 				});
 		});
 	};
 
-	// 确认删除对话框
+	// 删除对话框
 	const [isShowDelete, setIsShowDelete] = useState(false); // 是否展示
 	const [currentMediaData, setCurrentMediaData] = useState({}); // 当前媒体数据
 	const handleClickDelete = data => {
 		console.log('删除当前行', data);
 		setCurrentMediaData(data);
 		setIsShowDelete(true);
+		setModalType('delete');
 	};
 	const handleCancelDeleteModal = () => {
 		setIsShowDelete(false);
+		setCurrentMediaData({});
 	};
 	const HandleDeleteMedia = () => {
-		//  TODO:确认删除当前媒体
+		// 确认删除当前新闻
+		let params = [
+			{
+				id: currentMediaData.id,
+				title: currentMediaData.title,
+				mediaId: currentMediaData.mediaId,
+				media: currentMediaData.media,
+				mediaType: currentMediaData.mediaType,
+				newsDate: currentMediaData.newsDate,
+				url: currentMediaData.url,
+				enableFlag: 0,
+				publishFlag: 0,
+				updator: user.userId,
+			},
+		];
+		updateNews(params);
 	};
+
 	// 切换报道禁用使用状态
-	// const [isDisableReport,setIsDisableReport] = useState(false)
-	// TODO: 报道禁用启用状态不能本地模拟 用接口数据标识判断更改
+	const [currentPublishStatus, setCurrentPublishStatus] = useState(null);
 	const handleClickChangeStatus = item => {
 		console.log('启用禁用报道按钮：', item);
+		setModalType('publishStatus');
+		let params = { ...item };
+		console.log(params);
+		delete params.createTime;
+		delete params.creator;
+		delete params.updateTime;
+		params.updator = user.userId;
+		if (params.publishFlag) {
+			params.publishFlag = 0;
+		} else {
+			params.publishFlag = 1;
+		}
+		console.log(params);
+		setCurrentPublishStatus(params.publishFlag);
+		updateNews([params]);
 	};
-	// 改变每页条数
-	const [currentPageSize, setCurretPageSize] = useState(10);
 
 	return (
 		<div className="report">
@@ -313,7 +500,7 @@ function Report() {
 						<span className="iconfont icon-baozhi"></span>
 						<span className="sub_title">报道管理</span>
 					</p>
-					<p className="title_desc">现有报道：{} 篇</p>
+					<p className="title_desc">现有报道：{totalNumRef.current} 篇</p>
 				</div>
 				<div className="header_right">
 					<Input
@@ -324,7 +511,10 @@ function Report() {
 						prefix={<SearchOutlined />}
 					/>
 					<span
-						onClick={() => setIsShowAdd(!isShowAdd)}
+						onClick={() => {
+							setIsShowAdd(!isShowAdd);
+							setModalType('add');
+						}}
 						className="iconfont icon-add-sy"
 					/>
 				</div>
@@ -341,18 +531,21 @@ function Report() {
 							console.log('表格选中数据', selectedRowKeys, selectedRows);
 						},
 					}}
+					rowKey="id"
 					pagination={{
-						pageSize: currentPageSize,
+						current: params.page + 1,
+						pageSize: params.size,
 						showQuickJumper: true,
-						// total: dataSource.length,
+						total: totalNum,
 						showTotal: total => `共 ${total} 条`,
 						showSizeChanger: true,
 						onShowSizeChange: (current, size) => {
 							console.log('改变每页条数', current, size);
-							setCurretPageSize(size);
+							dispatchParams({ type: 'size', payload: size });
 						},
 						onChange: (page, pageSize) => {
 							console.log('点击分页:', page, pageSize);
+							dispatchParams({ type: 'page', payload: page - 1 });
 						},
 					}}
 				/>
@@ -361,6 +554,7 @@ function Report() {
 				visible={isShowAdd}
 				onCancel={handleCancelAddModal}
 				onOk={HandleAddOrChangeMedia}
+				maskClosable={false}
 				title="增改报道"
 				cancelText="取消"
 				okText="确定"
@@ -379,17 +573,25 @@ function Report() {
 						name="title"
 						rules={[{ required: true, message: '请输入报道标题' }]}
 					>
-						<Input placeholder="请输入报道或媒体名称" />
+						<Input placeholder="请输入报道标题" />
 					</Form.Item>
 					<Form.Item
 						label="媒体名称"
-						name="mediaName"
+						name="mediaId"
 						rules={[{ required: true, message: '请选择媒体名称' }]}
 					>
-						<Select placeholder="请选择媒体名称" allowClear>
-							<Option value="male">male</Option>
-							<Option value="female">female</Option>
-							<Option value="other">other</Option>
+						<Select
+							placeholder="请选择媒体名称"
+							allowClear
+							onChange={handleSelectMedia}
+						>
+							{/* TODO: 所有媒体 */}
+
+							{allMedia.map(item => (
+								<Option value={item.id} key={item.id}>
+									{item.media}
+								</Option>
+							))}
 						</Select>
 					</Form.Item>
 
@@ -398,7 +600,7 @@ function Report() {
 						// name="mediaType"
 						// rules={[{ required: true, message: '请选择媒体类型' }]}
 					>
-						（自动匹配无需填写）
+						{currentMediaType ? currentMediaType.label : '（自动匹配无需填写）'}
 					</Form.Item>
 					<Form.Item
 						label="报道链接"
@@ -412,7 +614,7 @@ function Report() {
 						name="time"
 						rules={[{ required: true, message: '请输入发布时间' }]}
 					>
-						<DatePicker inputReadOnly={false} onChange={handleTimeChange} />
+						<DatePicker inputReadOnly={true} onChange={handleTimeChange} />
 					</Form.Item>
 				</Form>
 			</Modal>
@@ -428,23 +630,30 @@ function Report() {
 				centered
 				destroyOnClose
 			>
-				<div className="delete_media_wrap">
+				<div className="delete_wrap">
 					<h3>是否确定删除</h3>
-					<p>
-						报道标题：<span>{currentMediaData.name}</span>
-					</p>
-					<p>
-						媒体名称及类型：
-						<span>
-							{currentMediaData.name}-{currentMediaData.name}
+					<div>
+						<span className="label">报道标题：</span>
+						<span className="content">{currentMediaData.title}</span>
+					</div>
+					<div>
+						<span className="label">媒体名称及类型：</span>
+						<span className="content">
+							{currentMediaData.media}&nbsp;-&nbsp;
+							{currentMediaData.mediaType &&
+								mediaType.filter(
+									item => item.key === currentMediaData.mediaType
+								)[0]['label']}
 						</span>
-					</p>
-					<p>
-						报道链接：<span>{currentMediaData.name}</span>
-					</p>
-					<p>
-						发布时间：<span>{currentMediaData.name}</span>
-					</p>
+					</div>
+					<div>
+						<span className="label">报道链接：</span>
+						<span className="content">{currentMediaData.url}</span>
+					</div>
+					<div>
+						<span className="label">发布时间：</span>
+						<span className="content">{currentMediaData.newsDate}</span>
+					</div>
 				</div>
 			</Modal>
 		</div>

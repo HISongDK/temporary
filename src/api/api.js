@@ -1,5 +1,5 @@
-// import { message } from "antd";
 import { service } from './service';
+import { message } from 'antd';
 
 const Request = (url, params = {}, type = 'GET') => {
 	return new Promise((resolve, reject) => {
@@ -19,14 +19,13 @@ const Request = (url, params = {}, type = 'GET') => {
 
 		promise
 			.then(res => {
-				console.log('请求成功', res);
-				console.log('数据内容', res.data.data);
+				// console.log('请求成功', res);
+				// console.log('数据内容', res.data.data);
 				resolve(res.data.data);
 			})
 			.catch(err => {
 				console.log('请求失败', err.message);
-				// message.destroy();
-				// message.error("请求失败 " + err);
+				message.error('请求失败，请重试 ' + err.message,3)
 				reject(err);
 			});
 	});

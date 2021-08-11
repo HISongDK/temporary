@@ -80,16 +80,21 @@
 		}
 	}
 
-	.delete_media_wrap {
-		h3 {
-			text-indent: 10%;
+	.delete_wrap {
+		div{
+			display: flex;
+			justify-content: center;
+			margin-bottom: 8px;
 		}
-
-		p {
-			text-indent: 35%;
+		.label{
+			flex-wrap: nowrap;
+			white-space: nowrap;
+			width: 150px;
+			text-align: right;
 		}
-
-		span {
+		.content {
+			width: 280px;
+			display: block;
 			color: red;
 		}
 	}

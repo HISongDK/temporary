@@ -14,11 +14,9 @@ import { UserContext } from '../../util/context';
 const { Header, Content, Sider } = Layout;
 
 function Home() {
-	const user = useContext(UserContext)
-	console.log(user,"context\n\n\n\n\n");
 	const [isNavFold, setIsNavFold] = useState(false); // 导航栏展开收起
 
-	// 用户点击下拉框
+	// 用户下拉框
 	const userLogout = (
 		<Menu>
 			<Menu.Item key="1">退出系统</Menu.Item>

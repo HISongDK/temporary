@@ -16,7 +16,6 @@ function App() {
 		axios.get(window.location.href).then(res => {
 			if (res.headers['x-tif-uid']) {
 				let uid = res.headers['x-tif-uid'];
-				uid = 'blhtijx4jd73jo51cd4ztb';
 				getAuthorityData(uid);
 			}
 		});
@@ -27,16 +26,12 @@ function App() {
 
 	async function getAuthorityData(uid) {
 		let res = await getUserData(uid);
-		// console.log(res);
-		setUserData(res.data);
+		setUserData(res);
 	}
-
-	// const UserContext = React.createContext();
-	// console.log(UserContext);
 
 	return (
 		<Router>
-			<UserContext.Provider>
+			<UserContext.Provider value={userData}>
 				<Route path="/" component={Home} />
 			</UserContext.Provider>
 		</Router>
