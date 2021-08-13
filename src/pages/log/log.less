@@ -30,5 +30,36 @@
 			}
 		}
 	}
-
+	main{
+		.success{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			&::before{
+				display: block;
+				content:"";
+				height:10px;
+				width: 10px;
+				border-radius: 50%;
+				background: green;
+				opacity: .7;
+				margin-right: 5px;
+			}
+		}
+		.fail{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			&::before{
+				display: block;
+				content:"";
+				height:10px;
+				width: 10px;
+				border-radius: 50%;
+				background: red;
+				opacity: .7;
+				margin-right: 5px;
+			}
+		}
+	}
 }

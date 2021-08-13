@@ -1,94 +1,85 @@
-import React, { useState, useReducer, useEffect } from 'react';
+import React, { useState, useReducer, useEffect, useRef } from 'react';
 import { Table, Input, Dropdown, Menu, DatePicker } from 'antd';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
-import { operateModule, operateObject, operateAction, operateResult } from './config.js';
+import { reducer, operateModule, operateObject, operateAction, operateResult } from './config.js';
+import { logQuery } from '../../api/index.js';
+import { debounce } from '@/util/debounce.js';
 import './log.less';
+import { AES } from '../../util/Aes.js';
 
 const { RangePicker } = DatePicker;
 
 function Slider() {
 	/* 查询参数 */
-	const reducer = (state, action) => {
-		switch (action.type) {
-			case 'text':
-				return {
-					...state,
-					text: action.payload,
-				};
-			case 'type':
-				return {
-					...state,
-					type: action.payload,
-				};
-			case 'time':
-				return {
-					...state,
-					time: action.payload,
-				};
-			case 'status':
-				return {
-					...state,
-					status: action.payload,
-				};
-			default:
-				return state;
-		}
-	};
 	const initialParams = {
-		text: '',
-		type: '',
-		time: '',
-		status: '',
+		keyword: '',
+		source: '',
+		object: '',
+		behavior: '',
+		result: '',
+		startTime: '',
+		endTime: '',
+		page: 0,
+		size: 10,
 	};
 	const [params, dispatchParams] = useReducer(reducer, initialParams);
-
+	const totalNumRef = useRef(null); // 左上角总数
+	const [totalNum, setTotalNum] = useState('');
 	useEffect(() => {
-		// TODO: 筛选参数改动 请求表格数据
+		// 获取表格数据
 		console.log(params);
+
+		setIsShowLoading(true);
+		async function getLogData() {
+			let res = await logQuery(params);
+			console.log(res);
+
+			// 初始获取总数
+			if (totalNumRef.current === null) {
+				totalNumRef.current = res.totalElements;
+			}
+			// 每次筛选获取当前分页总数
+			setTotalNum(res.totalElements);
+			res.content.forEach(item => {
+				item.userName = AES.decrypt(item.userName);
+			});
+			setDataSource(res.content);
+			setIsShowLoading(false);
+		}
+		getLogData();
 	}, [params]);
 
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
+		dispatchParams({ type: 'keyword', payload: e.target.value.replace("'", '') });
 	};
 	/* 时间选择 */
-	const timeChange = (dateMoment, dateString) => {
-		console.log(dateMoment, dateString);
+	const timeChange = dateMoment => {
+		if (dateMoment) {
+			dispatchParams({
+				type: 'startTime',
+				payload: dateMoment[0].format('YYYYMMDD') + '000000',
+			});
+			dispatchParams({
+				type: 'endTime',
+				payload: dateMoment[1].format('YYYYMMDD') + '000000',
+			});
+		} else {
+			dispatchParams({ type: 'startTime', payload: '' });
+			dispatchParams({ type: 'endTime', payload: '' });
+		}
 	};
 
 	/* 表格 */
 	const [dataSource, setDataSource] = useState([]);
 	const [isShowLoading, setIsShowLoading] = useState(false);
-	// 改变每页条数
-	const [currentPageSize, setCurretPageSize] = useState(10);
-
-	for (let index = 0; index < 15; index++) {
-		dataSource.push({
-			key: index,
-			name: '胡彦斌',
-			age: 32,
-			address: '西湖区湖底公园1号',
-		});
-	}
-
-	const handleClickType = item => {
-		console.log('点击筛选媒体类型：', item);
-		dispatchParams({ type: 'type', payload: item.key });
-	};
-	const handleClickTime = item => {
-		console.log('点击筛选发布时间：', item);
-		dispatchParams({ type: 'time', payload: item.key });
-	};
-	const handleClickStatus = item => {
-		console.log('点击筛选状态：', item);
-		dispatchParams({ type: 'status', payload: item.key });
-	};
 
 	const columns = [
 		{
 			title: '用户',
-			dataIndex: 'name',
-			key: 'name',
+			dataIndex: 'userName',
+			key: 'userName',
 			align: 'center',
 		},
 		{
@@ -98,14 +89,11 @@ function Slider() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu
-								// TODO: 默认选中项参数字段可能需调整
-								selectedKeys={[params.type || 'all']}
-							>
+							<Menu selectedKeys={[params.source]}>
 								{operateModule.map(item => (
 									<Menu.Item
 										onClick={item => {
-											handleClickType(item);
+											dispatchParams({ type: 'source', payload: item.key });
 										}}
 										key={item.key}
 									>
@@ -115,12 +103,18 @@ function Slider() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.source
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
-			dataIndex: 'key',
-			key: 'age',
+			dataIndex: 'source',
+			key: 'source',
 			align: 'center',
 		},
 		{
@@ -130,14 +124,11 @@ function Slider() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu
-								// TODO: 默认选中项参数字段可能需调整
-								selectedKeys={[params.type || 'all']}
-							>
+							<Menu selectedKeys={[params.object]}>
 								{operateObject.map(item => (
 									<Menu.Item
 										onClick={item => {
-											handleClickType(item);
+											dispatchParams({ type: 'object', payload: item.key });
 										}}
 										key={item.key}
 									>
@@ -147,12 +138,18 @@ function Slider() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.object
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
-			dataIndex: 'key',
-			key: 'age',
+			dataIndex: 'object',
+			key: 'object',
 			align: 'center',
 		},
 		{
@@ -162,14 +159,11 @@ function Slider() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu
-								// TODO: 默认选中项参数字段可能需调整
-								selectedKeys={[params.type || 'all']}
-							>
+							<Menu selectedKeys={[params.behavior]}>
 								{operateAction.map(item => (
 									<Menu.Item
 										onClick={item => {
-											handleClickType(item);
+											dispatchParams({ type: 'behavior', payload: item.key });
 										}}
 										key={item.key}
 									>
@@ -179,28 +173,39 @@ function Slider() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.behavior
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
-			dataIndex: 'address',
-			key: 'address',
+			dataIndex: 'behavior',
+			key: 'behavior',
 			align: 'center',
 		},
 		{
 			title: '操作详情',
-			dataIndex: 'address',
-			key: 'address',
+			dataIndex: 'details',
+			key: 'details',
 			align: 'center',
+			// width:300,
+			// ellipsis: true,
 		},
 		{
 			title: '操作时间',
-			dataIndex: 'address',
-			key: 'address',
+			dataIndex: 'time',
+			key: 'time',
 			align: 'center',
 			sorter: (a, b) => {
 				console.log(a, b);
-				return a.key - b.key;
+				return (
+					b.time.replaceAll('-', '').replaceAll(':', '').replace(' ', '') -
+					a.time.replaceAll('-', '').replaceAll(':', '').replace(' ', '')
+				);
 			},
 		},
 		{
@@ -210,11 +215,11 @@ function Slider() {
 					<Dropdown
 						trigger="click"
 						overlay={
-							<Menu selectedKeys={[params.status || 'all']}>
+							<Menu selectedKeys={[params.result]}>
 								{operateResult.map(item => (
 									<Menu.Item
 										onClick={item => {
-											handleClickStatus(item);
+											dispatchParams({ type: 'result', payload: item.key });
 										}}
 										key={item.key}
 									>
@@ -224,13 +229,25 @@ function Slider() {
 							</Menu>
 						}
 					>
-						<CaretDownOutlined style={{ marginLeft: '10px' }} />
+						<CaretDownOutlined
+							style={
+								params.result
+									? { marginLeft: '10px', color: '#1890ff' }
+									: { marginLeft: '10px' }
+							}
+						/>
 					</Dropdown>
 				</>
 			),
-			dataIndex: 'name',
-			key: 'status',
+			dataIndex: 'result',
+			key: 'result',
 			align: 'center',
+			render: text =>
+				text === 'Success' ? (
+					<div className="success">{'成功'}</div>
+				) : (
+					<div className="fail">{'失败'}</div>
+				),
 		},
 	];
 
@@ -242,7 +259,7 @@ function Slider() {
 						<span className="iconfont icon-log"></span>
 						<span className="sub_title">系统日志</span>
 					</p>
-					<p className="title_desc">现有日志记录：{} 条</p>
+					<p className="title_desc">现有日志记录：{totalNumRef.current} 条</p>
 				</div>
 				<div className="header_right">
 					<RangePicker
@@ -250,7 +267,7 @@ function Slider() {
 						onChange={(dateMoment, dateString) => timeChange(dateMoment, dateString)}
 					/>
 					<Input
-						onChange={handleChangeSearch}
+						onChange={debounce(handleChangeSearch, 500)}
 						allowClear
 						size="large"
 						placeholder="请输入报道或媒体名称"
@@ -263,6 +280,7 @@ function Slider() {
 					dataSource={dataSource}
 					columns={columns}
 					size="small"
+					rowKey="id"
 					bordered
 					loading={isShowLoading}
 					rowSelection={{
@@ -271,17 +289,19 @@ function Slider() {
 						},
 					}}
 					pagination={{
-						pageSize: currentPageSize,
+						current: params.page + 1,
+						pageSize: params.size,
 						showQuickJumper: true,
-						// total: dataSource.length,
+						total: totalNum,
 						showTotal: total => `共 ${total} 条`,
 						showSizeChanger: true,
 						onShowSizeChange: (current, size) => {
 							console.log('改变每页条数', current, size);
-							setCurretPageSize(size);
+							dispatchParams({ type: 'size', payload: size });
 						},
 						onChange: (page, pageSize) => {
 							console.log('点击分页:', page, pageSize);
+							dispatchParams({ type: 'page', payload: page - 1 });
 						},
 					}}
 				/>

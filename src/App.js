@@ -7,27 +7,30 @@ import 'antd/dist/antd.less';
 import axios from 'axios';
 import { getUserData } from './api';
 import { UserContext } from '@/util/context.js';
+import { AES } from './util/Aes';
 
 function App() {
 	const [userData, setUserData] = useState(null);
 
 	useEffect(() => {
-		// 获取用户信息
+		// 获取用户 ID
 		axios.get(window.location.href).then(res => {
 			if (res.headers['x-tif-uid']) {
 				let uid = res.headers['x-tif-uid'];
 				getAuthorityData(uid);
 			}
 		});
+		// 获取用户信息
+		async function getAuthorityData(uid) {
+			let res = await getUserData(uid);
+			window.user = res; // 定义全局变量，获取用户信息放入请求头
+			res.name = AES.decrypt(res.userName);
+			setUserData(res);
+		}
 		// 测试开发
-		let uid = 'blhtijx4jd73jo51cd4ztb';
-		getAuthorityData(uid);
+		// let uid = 'hoyz94ybm42qoc1hrxvv9u';
+		// getAuthorityData(uid);
 	}, []);
-
-	async function getAuthorityData(uid) {
-		let res = await getUserData(uid);
-		setUserData(res);
-	}
 
 	return (
 		<Router>

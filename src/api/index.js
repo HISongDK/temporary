@@ -5,9 +5,7 @@ import Request from './api';
 */
 
 // 获取用户信息
-export const getUserData = uid =>
-	Request('http://10.99.85.234/bacovid-test/materials/common/getUserPowerList/' + uid);
-// export const getUserData = uid => Request('/common/getUserPowerList/' + uid);
+export const getUserData = uid => Request('/who/' + uid);
 
 /* 
 	媒体管理
@@ -37,9 +35,16 @@ export const newsQuery = params => Request('news/query', params);
 
 // 新增轮播图
 export const pictureAdd = params => Request('/loopPlayPicture/add', params, 'post');
-// 新增轮播图
-export const pictureUpdate = params => Request('/loopPlayPicture/update', params);
-// 新增轮播图
+// 修改轮播图
+export const pictureUpdate = params => Request('/loopPlayPicture/update', params, 'put');
+// 上传轮播图
 export const pictureUpload = params => Request('/loopPlayPicture/upload', params);
-// 新增轮播图
+// 查询轮播图
 export const pictureQuery = params => Request('/loopPlayPicture/query', params);
+
+/* 
+	系统日志
+*/
+
+// 查询系统日志
+export const logQuery = params => Request('/log/query', params);

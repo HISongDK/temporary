@@ -31,7 +31,6 @@ function Media() {
 		setIsShowLoading(true);
 		async function getMedia() {
 			let result = await mediaQuery(params);
-			console.log(result);
 
 			if (totalNumRef.current === null) {
 				totalNumRef.current = result.totalElements;
@@ -45,8 +44,8 @@ function Media() {
 
 	// 搜索框
 	const handleChangeSearch = e => {
-		console.log('搜索框变动', e.target.value);
-		setText(e.target.value);
+		// console.log('搜索框变动', e.target.value);
+		setText(e.target.value.replace("'", '')); // 替换 ' 输入法分隔符为空
 		setPage(0);
 	};
 
@@ -177,7 +176,8 @@ function Media() {
 			dataIndex: 'id',
 			key: 'id',
 			align: 'center',
-			width: 400,
+			// width: 400,
+			ellipsis: true,
 		},
 		{
 			title: '媒体名称',
@@ -236,7 +236,7 @@ function Media() {
 		{
 			title: '操作',
 			align: 'center',
-
+			width:150,
 			render: (t, r, i) => {
 				// console.log(t, r, i);
 				return (
@@ -383,7 +383,13 @@ function Media() {
 					<Form.Item
 						label="媒体名称"
 						name="mediaName"
-						rules={[{ required: true, message: '请输入媒体名称' }]}
+						rules={[
+							{
+								required: true,
+								message: '请输入媒体名称',
+								transform: value => value.trim(),
+							},
+						]}
 					>
 						<Input placeholder="请输入媒体名称" />
 					</Form.Item>

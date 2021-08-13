@@ -11,7 +11,6 @@ const { Option } = Select;
 function Report() {
 	/* 用户信息 */
 	const user = useContext(UserContext);
-	console.log(user);
 	/* 查询参数 */
 	const reducer = (state, action) => {
 		switch (action.type) {
@@ -81,7 +80,7 @@ function Report() {
 	const [allMedia, setAllMedia] = useState([]);
 	useEffect(() => {
 		async function getMedia() {
-			let res = await mediaQuery();
+			let res = await mediaQuery({ all: 'all' });
 			console.log('所有媒体', res.content);
 			setAllMedia(res.content);
 		}
@@ -91,7 +90,7 @@ function Report() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
-		dispatchParams({ type: 'text', payload: e.target.value });
+		dispatchParams({ type: 'text', payload: e.target.value.replace("'", '') });
 	};
 
 	/* 增改报道对话框 */
@@ -149,7 +148,7 @@ function Report() {
 						addNews(params);
 						break;
 					case 'change':
-						console.log('不是change么');
+						// console.log('不是change么');
 						params = [
 							{
 								id: currentMediaType.id,
@@ -184,6 +183,7 @@ function Report() {
 		setForceUpdate(count => count + 1);
 	}
 	// 删改
+	let currentPublishStatus; // 判断启用禁用
 	async function updateNews(params) {
 		let res = await newsUpdate(params);
 		console.log(res);
@@ -194,12 +194,15 @@ function Report() {
 			message.success('删除报道成功', 1);
 			setIsShowDelete(false);
 		} else if (modalType === 'publishStatus') {
-			// TODO: 弹窗状态判断有Bug
+			// TODO: 弹窗状态判断有Bug ，首次无弹窗
+			console.log('首次无弹窗，是否执行');
 			if (currentPublishStatus === 1) {
-				message.success('启用报道成功', 2);
+				message.destroy();
+				message.success('禁用报道成功', 2);
 			}
 			if (currentPublishStatus === 0) {
-				message.success('禁用报道成功', 2);
+				message.destroy();
+				message.success('启用报道成功', 2);
 			}
 		}
 		setForceUpdate(count => count + 1);
@@ -286,13 +289,14 @@ function Report() {
 			dataIndex: 'id',
 			key: 'id',
 			align: 'center',
+			ellipsis: true,
 		},
 		{
 			title: '报道标题',
 			dataIndex: 'title',
 			key: 'title',
 			align: 'center',
-			// width: 300,
+			ellipsis: true,
 		},
 		{
 			title: '媒体名称',
@@ -472,11 +476,11 @@ function Report() {
 	};
 
 	// 切换报道禁用使用状态
-	const [currentPublishStatus, setCurrentPublishStatus] = useState(null);
 	const handleClickChangeStatus = item => {
+		currentPublishStatus = item.publishFlag;
+		let params = { ...item };
 		console.log('启用禁用报道按钮：', item);
 		setModalType('publishStatus');
-		let params = { ...item };
 		console.log(params);
 		delete params.createTime;
 		delete params.creator;
@@ -488,7 +492,6 @@ function Report() {
 			params.publishFlag = 1;
 		}
 		console.log(params);
-		setCurrentPublishStatus(params.publishFlag);
 		updateNews([params]);
 	};
 
@@ -571,22 +574,32 @@ function Report() {
 					<Form.Item
 						label="报道标题"
 						name="title"
-						rules={[{ required: true, message: '请输入报道标题' }]}
+						rules={[
+							{
+								required: true,
+								message: '请输入报道标题',
+								transform: value => value.trim(),
+							},
+						]}
 					>
 						<Input placeholder="请输入报道标题" />
 					</Form.Item>
 					<Form.Item
 						label="媒体名称"
 						name="mediaId"
-						rules={[{ required: true, message: '请选择媒体名称' }]}
+						rules={[
+							{
+								required: true,
+								message: '请选择媒体名称',
+								// transform: value => value.trim(),
+							},
+						]}
 					>
 						<Select
 							placeholder="请选择媒体名称"
 							allowClear
 							onChange={handleSelectMedia}
 						>
-							{/* TODO: 所有媒体 */}
-
 							{allMedia.map(item => (
 								<Option value={item.id} key={item.id}>
 									{item.media}
@@ -595,17 +608,19 @@ function Report() {
 						</Select>
 					</Form.Item>
 
-					<Form.Item
-						label="媒体类型"
-						// name="mediaType"
-						// rules={[{ required: true, message: '请选择媒体类型' }]}
-					>
+					<Form.Item label="媒体类型">
 						{currentMediaType ? currentMediaType.label : '（自动匹配无需填写）'}
 					</Form.Item>
 					<Form.Item
 						label="报道链接"
 						name="link"
-						rules={[{ required: true, message: '请输入报道链接' }]}
+						rules={[
+							{
+								required: true,
+								message: '请输入报道链接',
+								transform: value => value.trim(),
+							},
+						]}
 					>
 						<Input placeholder="请输入报道链接" />
 					</Form.Item>
