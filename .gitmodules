@@ -1,0 +1,3 @@
+[submodule "git_modules/god"]
+	path = git_modules/god
+	url = ssh://git@git.ascs.tech/base/god.git
