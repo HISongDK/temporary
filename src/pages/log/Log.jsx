@@ -1,6 +1,7 @@
 import React, { useState, useReducer, useEffect, useRef } from 'react';
 import { Table, Input, Dropdown, Menu, DatePicker } from 'antd';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
+import moment from 'moment';
 import { reducer, operateModule, operateObject, operateAction, operateResult } from './config.js';
 import { logQuery } from '../../api/index.js';
 import { debounce } from '@/util/debounce.js';
@@ -59,11 +60,11 @@ function Slider() {
 		if (dateMoment) {
 			dispatchParams({
 				type: 'startTime',
-				payload: dateMoment[0].format('YYYYMMDD') + '000000',
+				payload: dateMoment[0].format('YYYYMMDDHHmmss'),
 			});
 			dispatchParams({
 				type: 'endTime',
-				payload: dateMoment[1].format('YYYYMMDD') + '000000',
+				payload: dateMoment[1].format('YYYYMMDDHHmmss'),
 			});
 		} else {
 			dispatchParams({ type: 'startTime', payload: '' });
@@ -265,7 +266,11 @@ function Slider() {
 				<div className="header_right">
 					<RangePicker
 						size="large"
+						showTime
 						onChange={(dateMoment, dateString) => timeChange(dateMoment, dateString)}
+						disabledDate={current => {
+							return current && current >= moment().endOf('day') - 1;
+						}}
 					/>
 					<Input
 						onChange={debounce(handleChangeSearch, 500)}
@@ -284,11 +289,11 @@ function Slider() {
 					rowKey="id"
 					bordered
 					loading={isShowLoading}
-					rowSelection={{
-						onChange: (selectedRowKeys, selectedRows) => {
-							console.log('表格选中数据', selectedRowKeys, selectedRows);
-						},
-					}}
+					// rowSelection={{
+					// 	onChange: (selectedRowKeys, selectedRows) => {
+					// 		console.log('表格选中数据', selectedRowKeys, selectedRows);
+					// 	},
+					// }}
 					pagination={{
 						current: params.page + 1,
 						pageSize: params.size,
