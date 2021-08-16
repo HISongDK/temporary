@@ -11,6 +11,9 @@
 # production
 /build
 dist
+.gradle
+.build
+
 # misc
 .DS_Store
 .env.local
