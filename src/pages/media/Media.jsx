@@ -295,8 +295,8 @@ function Media() {
 		let params = [
 			{
 				id: currentMediaData.id,
-				// media: res.mediaName,
-				// mediaType: res.mediaType,
+				media: currentMediaData.mediaName,
+				mediaType: currentMediaData.mediaType,
 				updator: user.userId,
 				enableFlag: 0,
 			},
@@ -339,11 +339,11 @@ function Media() {
 					bordered
 					rowKey="id"
 					loading={isShowLoading}
-					rowSelection={{
-						onChange: (selectedRowKeys, selectedRows) => {
-							console.log('表格选中数据', selectedRowKeys, selectedRows);
-						},
-					}}
+					// rowSelection={{
+					// 	onChange: (selectedRowKeys, selectedRows) => {
+					// 		console.log('表格选中数据', selectedRowKeys, selectedRows);
+					// 	},
+					// }}
 					pagination={{
 						current: page + 1,
 						pageSize: currentPageSize,

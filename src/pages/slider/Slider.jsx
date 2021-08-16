@@ -633,11 +633,11 @@ function Slider() {
 					loading={isShowLoading}
 					rowKey="id"
 					// scroll={{ x: '70%', y: '100%' }}
-					rowSelection={{
-						onChange: (selectedRowKeys, selectedRows) => {
-							console.log('表格选中数据', selectedRowKeys, selectedRows);
-						},
-					}}
+					// rowSelection={{
+					// 	onChange: (selectedRowKeys, selectedRows) => {
+					// 		console.log('表格选中数据', selectedRowKeys, selectedRows);
+					// 	},
+					// }}
 					pagination={{
 						current: params.page + 1,
 						pageSize: params.size,

@@ -20,6 +20,7 @@ function App() {
 				getAuthorityData(uid);
 			} else {
 				// 测试开发
+				// let uid = hoyz94ybm42qoc1hrxvv9u
 				let uid = window.TEST_UID;
 				getAuthorityData(uid);
 			}

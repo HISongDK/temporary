@@ -528,11 +528,11 @@ function Report() {
 					size="small"
 					bordered
 					loading={isShowLoading}
-					rowSelection={{
-						onChange: (selectedRowKeys, selectedRows) => {
-							console.log('表格选中数据', selectedRowKeys, selectedRows);
-						},
-					}}
+					// rowSelection={{
+					// 	onChange: (selectedRowKeys, selectedRows) => {
+					// 		console.log('表格选中数据', selectedRowKeys, selectedRows);
+					// 	},
+					// }}
 					rowKey="id"
 					pagination={{
 						current: params.page + 1,
@@ -628,7 +628,13 @@ function Report() {
 						name="time"
 						rules={[{ required: true, message: '请输入发布时间' }]}
 					>
-						<DatePicker inputReadOnly={true} onChange={handleTimeChange} />
+						<DatePicker
+							inputReadOnly={true}
+							onChange={handleTimeChange}
+							disabledDate={current => {
+								return current && current >= moment().endOf('day');
+							}}
+						/>
 					</Form.Item>
 				</Form>
 			</Modal>
