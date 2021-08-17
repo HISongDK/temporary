@@ -578,7 +578,7 @@ function Report() {
 							{
 								required: true,
 								message: '请输入报道标题',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>
@@ -618,7 +618,7 @@ function Report() {
 							{
 								required: true,
 								message: '请输入报道链接',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>

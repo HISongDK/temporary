@@ -236,7 +236,7 @@ function Media() {
 		{
 			title: '操作',
 			align: 'center',
-			width:150,
+			width: 150,
 			render: (t, r, i) => {
 				// console.log(t, r, i);
 				return (
@@ -387,7 +387,7 @@ function Media() {
 							{
 								required: true,
 								message: '请输入媒体名称',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>

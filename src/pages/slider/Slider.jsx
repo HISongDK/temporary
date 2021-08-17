@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useReducer, useEffect, useContext } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, Upload, Switch } from 'antd';
-import { SearchOutlined, CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
+import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 import { debounce } from '@/util/debounce.js';
 import './slider.less';
@@ -239,16 +239,16 @@ function Slider() {
 		}
 	};
 	// 上传图片
-	const [loading, setLoading] = useState(false);
+	// const [loading, setLoading] = useState(false);
 	const [imageUrl, setImageUrl] = useState('');
 	const handleChange = info => {
 		console.log('链接', info);
 		if (info.file.status === 'uploading') {
-			setLoading(true);
+			// setLoading(true);
 			return;
 		}
 		if (info.file.status === 'done') {
-			setLoading(false);
+			// setLoading(false);
 			setImageUrl(window.PICTURE_URL + info.file.response.data.storageAddress);
 		}
 	};
