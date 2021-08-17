@@ -1,0 +1,65 @@
+.log {
+	header {
+		display: flex;
+		justify-content: space-between;
+
+		.header_left {
+			.header_left_top {
+				font-size: 16px;
+
+				.iconfont {
+					margin-right: 10px;
+				}
+			}
+		}
+
+		.header_right {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+
+			.ant-picker{
+				flex: 1;
+				width: 500px;
+				border-radius: 10px;
+			}
+			.ant-input-affix-wrapper {
+				flex: 1;
+				margin-left: 20px;
+				border-radius: 10px;
+			}
+		}
+	}
+	main{
+		.success{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			&::before{
+				display: block;
+				content:"";
+				height:10px;
+				width: 10px;
+				border-radius: 50%;
+				background: green;
+				opacity: .7;
+				margin-right: 5px;
+			}
+		}
+		.fail{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			&::before{
+				display: block;
+				content:"";
+				height:10px;
+				width: 10px;
+				border-radius: 50%;
+				background: red;
+				opacity: .7;
+				margin-right: 5px;
+			}
+		}
+	}
+}
