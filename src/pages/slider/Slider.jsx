@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useReducer, useEffect, useContext } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, Upload, Switch } from 'antd';
-import { SearchOutlined, CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
+import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 import { debounce } from '@/util/debounce.js';
 import './slider.less';
@@ -98,7 +98,7 @@ function Slider() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
-		dispatchParams({ type: 'keyword', payload: e.target.value.replace("'", '') });
+		dispatchParams({ type: 'keyword', payload: e.target.value.replace("'", '').trim() });
 	};
 
 	/* 增改对话框 */
@@ -221,7 +221,7 @@ function Slider() {
 	const matchCurrentNews = e => {
 		console.log(e.target.value);
 		for (let item of allReports) {
-			if (item.id === e.target.value || item.title === e.target.value) {
+			if (item.id === e.target.value.trim() || item.title === e.target.value.trim()) {
 				console.log('有匹配报道信息', item);
 
 				// 生成匹配显示文本
@@ -239,16 +239,16 @@ function Slider() {
 		}
 	};
 	// 上传图片
-	const [loading, setLoading] = useState(false);
+	// const [loading, setLoading] = useState(false);
 	const [imageUrl, setImageUrl] = useState('');
 	const handleChange = info => {
 		console.log('链接', info);
 		if (info.file.status === 'uploading') {
-			setLoading(true);
+			// setLoading(true);
 			return;
 		}
 		if (info.file.status === 'done') {
-			setLoading(false);
+			// setLoading(false);
 			setImageUrl(window.PICTURE_URL + info.file.response.data.storageAddress);
 		}
 	};

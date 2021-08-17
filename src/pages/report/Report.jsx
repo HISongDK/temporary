@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect, useReducer, useContext } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, DatePicker } from 'antd';
-import moment from 'moment';
+// import moment from 'moment';
+import dayjs from 'dayjs';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
 import './report.less';
 import { debounce } from '@/util/debounce.js';
@@ -90,7 +91,7 @@ function Report() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
-		dispatchParams({ type: 'text', payload: e.target.value.replace("'", '') });
+		dispatchParams({ type: 'text', payload: e.target.value.replace("'", '').trim() });
 	};
 
 	/* 增改报道对话框 */
@@ -134,12 +135,12 @@ function Report() {
 					case 'add':
 						params = [
 							{
-								title: res.title,
+								title: res.title.trim(),
 								mediaId: res.mediaId,
 								media: currentMediaType.mediaName,
 								mediaType: currentMediaType.key,
 								newsDate: res.time.format('YYYY-MM-DD'),
-								url: res.link,
+								url: res.link.trim(),
 								enableFlag: 1,
 								publishFlag: 1,
 								creator: user.userId,
@@ -437,7 +438,7 @@ function Report() {
 					mediaId: data.mediaId,
 					mediaType: data.address,
 					link: data.url,
-					time: moment(data.newsDate),
+					time: dayjs(data.newsDate),
 				});
 		});
 	};
@@ -577,7 +578,7 @@ function Report() {
 							{
 								required: true,
 								message: '请输入报道标题',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>
@@ -617,7 +618,7 @@ function Report() {
 							{
 								required: true,
 								message: '请输入报道链接',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>
@@ -632,7 +633,7 @@ function Report() {
 							inputReadOnly={true}
 							onChange={handleTimeChange}
 							disabledDate={current => {
-								return current && current >= moment().endOf('day');
+								return current && current >= dayjs().endOf('day');
 							}}
 						/>
 					</Form.Item>
