@@ -191,6 +191,7 @@ function Report() {
 		if (modalType === 'change') {
 			message.success('修改报道成功', 1);
 			setIsShowAdd(false);
+			setCurrentMediaType('');
 		} else if (modalType === 'delete') {
 			message.success('删除报道成功', 1);
 			setIsShowDelete(false);

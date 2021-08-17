@@ -129,7 +129,7 @@ function Slider() {
 					case 'add':
 						params = {
 							newsId: newsData.news.id,
-							mediaType: newsData.news.mediaType,
+							mediaType: 0,
 							rank: res.rank,
 							storageAddress: res.file,
 							publishFlag: !!res.publishFlag * 1,
@@ -178,9 +178,10 @@ function Slider() {
 		setIsShowAdd(false);
 		setImageUrl('');
 		setNewsData({});
+		setIsImgUsable(false);
 		setTimeout(() => {
 			setForceUpdate(state => state + 1);
-		});
+		}, 5);
 	}
 	// 删改
 	async function updatePicture(param) {
@@ -191,6 +192,8 @@ function Slider() {
 			setForceUpdate(state => state + 1);
 			setIsShowAdd(false);
 			setNewsData({});
+			setImageUrl('');
+			setIsImgUsable(false);
 		} else if (modalType === 'delete') {
 			message.success('删除轮播图信息成功', 1);
 			setIsShowDelete(false);
@@ -201,7 +204,7 @@ function Slider() {
 				} else {
 					setForceUpdate(state => state + 1);
 				}
-			});
+			}, 5);
 		}
 	}
 
