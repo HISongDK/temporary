@@ -91,7 +91,7 @@ function Report() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
-		dispatchParams({ type: 'text', payload: e.target.value.replace("'", '') });
+		dispatchParams({ type: 'text', payload: e.target.value.replace("'", '').trim() });
 	};
 
 	/* 增改报道对话框 */
@@ -135,12 +135,12 @@ function Report() {
 					case 'add':
 						params = [
 							{
-								title: res.title,
+								title: res.title.trim(),
 								mediaId: res.mediaId,
 								media: currentMediaType.mediaName,
 								mediaType: currentMediaType.key,
 								newsDate: res.time.format('YYYY-MM-DD'),
-								url: res.link,
+								url: res.link.trim(),
 								enableFlag: 1,
 								publishFlag: 1,
 								creator: user.userId,

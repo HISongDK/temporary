@@ -54,7 +54,7 @@ function Slider() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
-		dispatchParams({ type: 'keyword', payload: e.target.value.replace("'", '') });
+		dispatchParams({ type: 'keyword', payload: e.target.value.replace("'", '').trim() });
 	};
 	/* 时间选择 */
 	const timeChange = dateMoment => {

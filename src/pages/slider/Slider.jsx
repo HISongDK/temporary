@@ -98,7 +98,7 @@ function Slider() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
-		dispatchParams({ type: 'keyword', payload: e.target.value.replace("'", '') });
+		dispatchParams({ type: 'keyword', payload: e.target.value.replace("'", '').trim() });
 	};
 
 	/* 增改对话框 */
@@ -221,7 +221,7 @@ function Slider() {
 	const matchCurrentNews = e => {
 		console.log(e.target.value);
 		for (let item of allReports) {
-			if (item.id === e.target.value || item.title === e.target.value) {
+			if (item.id === e.target.value.trim() || item.title === e.target.value.trim()) {
 				console.log('有匹配报道信息', item);
 
 				// 生成匹配显示文本

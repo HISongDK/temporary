@@ -45,7 +45,7 @@ function Media() {
 	// 搜索框
 	const handleChangeSearch = e => {
 		// console.log('搜索框变动', e.target.value);
-		setText(e.target.value.replace("'", '')); // 替换 ' 输入法分隔符为空
+		setText(e.target.value.replace("'", '').trim()); // 替换 ' 输入法分隔符为空
 		setPage(0);
 	};
 
@@ -74,7 +74,7 @@ function Media() {
 						// 添加媒体
 						params = [
 							{
-								media: res.mediaName,
+								media: res.mediaName.trim(),
 								mediaType: res.mediaType,
 								creator: user.userId,
 								enableFlag: 1,
