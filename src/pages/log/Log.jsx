@@ -1,7 +1,8 @@
 import React, { useState, useReducer, useEffect, useRef } from 'react';
 import { Table, Input, Dropdown, Menu, DatePicker } from 'antd';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
-import moment from 'moment';
+// import moment from 'moment';
+import dayjs from 'dayjs';
 import { reducer, operateModule, operateObject, operateAction, operateResult } from './config.js';
 import { logQuery } from '../../api/index.js';
 import { debounce } from '@/util/debounce.js';
@@ -269,7 +270,7 @@ function Slider() {
 						showTime
 						onChange={(dateMoment, dateString) => timeChange(dateMoment, dateString)}
 						disabledDate={current => {
-							return current && current >= moment().endOf('day') - 1;
+							return current && current >= dayjs().endOf('day') - 1;
 						}}
 					/>
 					<Input

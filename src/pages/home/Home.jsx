@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { HashRouter, Redirect, Route, Switch } from 'react-router-dom';
-import { Layout, Dropdown, Menu } from 'antd';
+import { Layout } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import LeftNav from './component/LeftNav';
 import Media from '@/pages/media/Media.jsx';
@@ -18,13 +18,13 @@ function Home() {
 	// 用户信息
 	const user = useContext(UserContext);
 	// 用户下拉框
-	const userLogout = (
-		<Menu>
-			<Menu.Item key="1">
-				<span>退出系统</span>
-			</Menu.Item>
-		</Menu>
-	);
+	// const userLogout = (
+	// 	<Menu>
+	// 		<Menu.Item key="1">
+	// 			<span>退出系统</span>
+	// 		</Menu.Item>
+	// 	</Menu>
+	// );
 
 	return (
 		<div className="home">

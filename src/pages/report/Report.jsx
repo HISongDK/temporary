@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect, useReducer, useContext } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, DatePicker } from 'antd';
-import moment from 'moment';
+// import moment from 'moment';
+import dayjs from 'dayjs';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
 import './report.less';
 import { debounce } from '@/util/debounce.js';
@@ -437,7 +438,7 @@ function Report() {
 					mediaId: data.mediaId,
 					mediaType: data.address,
 					link: data.url,
-					time: moment(data.newsDate),
+					time: dayjs(data.newsDate),
 				});
 		});
 	};
@@ -632,7 +633,7 @@ function Report() {
 							inputReadOnly={true}
 							onChange={handleTimeChange}
 							disabledDate={current => {
-								return current && current >= moment().endOf('day');
+								return current && current >= dayjs().endOf('day');
 							}}
 						/>
 					</Form.Item>
