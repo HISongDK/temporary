@@ -45,7 +45,7 @@ function Media() {
 	// 搜索框
 	const handleChangeSearch = e => {
 		// console.log('搜索框变动', e.target.value);
-		setText(e.target.value.replace("'", '')); // 替换 ' 输入法分隔符为空
+		setText(e.target.value.replace("'", '').trim()); // 替换 ' 输入法分隔符为空
 		setPage(0);
 	};
 
@@ -74,7 +74,7 @@ function Media() {
 						// 添加媒体
 						params = [
 							{
-								media: res.mediaName,
+								media: res.mediaName.trim(),
 								mediaType: res.mediaType,
 								creator: user.userId,
 								enableFlag: 1,
@@ -236,7 +236,7 @@ function Media() {
 		{
 			title: '操作',
 			align: 'center',
-			width:150,
+			width: 150,
 			render: (t, r, i) => {
 				// console.log(t, r, i);
 				return (
@@ -295,8 +295,8 @@ function Media() {
 		let params = [
 			{
 				id: currentMediaData.id,
-				// media: res.mediaName,
-				// mediaType: res.mediaType,
+				media: currentMediaData.mediaName,
+				mediaType: currentMediaData.mediaType,
 				updator: user.userId,
 				enableFlag: 0,
 			},
@@ -339,11 +339,11 @@ function Media() {
 					bordered
 					rowKey="id"
 					loading={isShowLoading}
-					rowSelection={{
-						onChange: (selectedRowKeys, selectedRows) => {
-							console.log('表格选中数据', selectedRowKeys, selectedRows);
-						},
-					}}
+					// rowSelection={{
+					// 	onChange: (selectedRowKeys, selectedRows) => {
+					// 		console.log('表格选中数据', selectedRowKeys, selectedRows);
+					// 	},
+					// }}
 					pagination={{
 						current: page + 1,
 						pageSize: currentPageSize,
@@ -387,7 +387,7 @@ function Media() {
 							{
 								required: true,
 								message: '请输入媒体名称',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>

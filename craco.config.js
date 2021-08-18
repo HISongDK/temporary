@@ -2,11 +2,13 @@ const path = require('path');
 const CracoLessPlugin = require('craco-less');
 const CracoAntDesignPlugin = require('craco-antd');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin')
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const pathResolve = pathUrl => path.join(__dirname, pathUrl);
 
-const { when, whenDev, whenProd, whenTest, ESLINT_MODES, POSTCSS_MODES } = require('@craco/craco');
+const { whenProd } = require('@craco/craco');
 
 module.exports = {
 	webpack: {
@@ -24,6 +26,10 @@ module.exports = {
 			}),
 			// 查看打包的进度
 			new SimpleProgressWebpackPlugin(),
+			// 替换moment为dayjs
+			new AntdDayjsWebpackPlugin(),
+			// 依赖包分析
+			// new BundleAnalyzerPlugin(),
 			...whenProd(
 				() => [
 					new UglifyJsPlugin({

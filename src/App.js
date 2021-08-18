@@ -18,6 +18,11 @@ function App() {
 			if (res.headers['x-tif-uid']) {
 				let uid = res.headers['x-tif-uid'];
 				getAuthorityData(uid);
+			} else {
+				// 测试开发
+				// let uid = 'hoyz94ybm42qoc1hrxvv9u'
+				let uid = window.TEST_UID;
+				getAuthorityData(uid);
 			}
 		});
 		// 获取用户信息
@@ -27,9 +32,6 @@ function App() {
 			res.name = AES.decrypt(res.userName);
 			setUserData(res);
 		}
-		// 测试开发
-		// let uid = 'hoyz94ybm42qoc1hrxvv9u';
-		// getAuthorityData(uid);
 	}, []);
 
 	return (

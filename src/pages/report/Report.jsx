@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect, useReducer, useContext } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, DatePicker } from 'antd';
-import moment from 'moment';
+// import moment from 'moment';
+import dayjs from 'dayjs';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
 import './report.less';
 import { debounce } from '@/util/debounce.js';
@@ -90,7 +91,7 @@ function Report() {
 	/* 搜索 */
 	const handleChangeSearch = e => {
 		console.log('搜索框变动', e.target.value);
-		dispatchParams({ type: 'text', payload: e.target.value.replace("'", '') });
+		dispatchParams({ type: 'text', payload: e.target.value.replace("'", '').trim() });
 	};
 
 	/* 增改报道对话框 */
@@ -123,7 +124,7 @@ function Report() {
 		console.log(date, dateString);
 	};
 	// 确定
-	const [modalType, setModalType] = useState('');
+	const [modalType, setModalType] = useState('publishStatus'); // 启用禁用首次不执行状态、弹窗，指定默认状态标识为发布状态
 	const HandleAddOrChangeMedia = () => {
 		addMediaRef.current
 			.validateFields()
@@ -134,12 +135,12 @@ function Report() {
 					case 'add':
 						params = [
 							{
-								title: res.title,
+								title: res.title.trim(),
 								mediaId: res.mediaId,
 								media: currentMediaType.mediaName,
 								mediaType: currentMediaType.key,
 								newsDate: res.time.format('YYYY-MM-DD'),
-								url: res.link,
+								url: res.link.trim(),
 								enableFlag: 1,
 								publishFlag: 1,
 								creator: user.userId,
@@ -190,11 +191,11 @@ function Report() {
 		if (modalType === 'change') {
 			message.success('修改报道成功', 1);
 			setIsShowAdd(false);
+			setCurrentMediaType('');
 		} else if (modalType === 'delete') {
 			message.success('删除报道成功', 1);
 			setIsShowDelete(false);
 		} else if (modalType === 'publishStatus') {
-			// TODO: 弹窗状态判断有Bug ，首次无弹窗
 			console.log('首次无弹窗，是否执行');
 			if (currentPublishStatus === 1) {
 				message.destroy();
@@ -438,7 +439,7 @@ function Report() {
 					mediaId: data.mediaId,
 					mediaType: data.address,
 					link: data.url,
-					time: moment(data.newsDate),
+					time: dayjs(data.newsDate),
 				});
 		});
 	};
@@ -477,10 +478,10 @@ function Report() {
 
 	// 切换报道禁用使用状态
 	const handleClickChangeStatus = item => {
+		setModalType('publishStatus');
 		currentPublishStatus = item.publishFlag;
 		let params = { ...item };
 		console.log('启用禁用报道按钮：', item);
-		setModalType('publishStatus');
 		console.log(params);
 		delete params.createTime;
 		delete params.creator;
@@ -529,11 +530,11 @@ function Report() {
 					size="small"
 					bordered
 					loading={isShowLoading}
-					rowSelection={{
-						onChange: (selectedRowKeys, selectedRows) => {
-							console.log('表格选中数据', selectedRowKeys, selectedRows);
-						},
-					}}
+					// rowSelection={{
+					// 	onChange: (selectedRowKeys, selectedRows) => {
+					// 		console.log('表格选中数据', selectedRowKeys, selectedRows);
+					// 	},
+					// }}
 					rowKey="id"
 					pagination={{
 						current: params.page + 1,
@@ -578,7 +579,7 @@ function Report() {
 							{
 								required: true,
 								message: '请输入报道标题',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>
@@ -618,7 +619,7 @@ function Report() {
 							{
 								required: true,
 								message: '请输入报道链接',
-								transform: value => value.trim(),
+								transform: value => value && value.trim(),
 							},
 						]}
 					>
@@ -629,7 +630,13 @@ function Report() {
 						name="time"
 						rules={[{ required: true, message: '请输入发布时间' }]}
 					>
-						<DatePicker inputReadOnly={true} onChange={handleTimeChange} />
+						<DatePicker
+							inputReadOnly={true}
+							onChange={handleTimeChange}
+							disabledDate={current => {
+								return current && current >= dayjs().endOf('day');
+							}}
+						/>
 					</Form.Item>
 				</Form>
 			</Modal>
