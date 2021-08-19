@@ -11,6 +11,7 @@ import { AES } from './util/Aes';
 
 function App() {
 	const [userData, setUserData] = useState(null);
+	
 	useEffect(() => {
 		// 获取用户 ID
 		axios.get(window.location.href).then(res => {
