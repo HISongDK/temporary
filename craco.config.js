@@ -5,7 +5,7 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin')
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const pathResolve = pathUrl => path.join(__dirname, pathUrl);
 
 const { whenProd } = require('@craco/craco');
