@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useReducer, useEffect, useContext } from 'react';
 import { Modal, Table, Input, Form, Select, message, Dropdown, Menu, Upload, Switch } from 'antd';
 import { SearchOutlined, CaretDownOutlined } from '@ant-design/icons';
-import ImgCrop from 'antd-img-crop';
+// import ImgCrop from 'antd-img-crop';
 import { debounce } from '@/util/debounce.js';
 import './slider.less';
 import { newsQuery, pictureQuery, pictureAdd, pictureUpdate } from '../../api';
@@ -695,13 +695,13 @@ function Slider() {
 						>
 							<Input type="hidden" />
 						</Form.Item>
-						<ImgCrop
-							aspect={360 / 193}
-							quality={1}
+						{/* <ImgCrop
+							aspect={360 / 296}
+							quality={.8}
 							modalTitle="请裁剪轮播图显示尺寸"
 							modalOk="裁剪"
 							modalCancel="取消"
-						>
+						> */}
 							<Upload
 								listType="picture-card"
 								className="avatar-uploader"
@@ -719,7 +719,7 @@ function Slider() {
 									<span className="iconfont icon-zhaoxiangji"></span>
 								)}
 							</Upload>
-						</ImgCrop>
+						{/* </ImgCrop> */}
 					</Form.Item>
 
 					<Form.Item
