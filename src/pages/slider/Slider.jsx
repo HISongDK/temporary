@@ -200,7 +200,7 @@ function Slider() {
 			setNewsData({});
 			setTimeout(() => {
 				if (dataSource.length === 1) {
-					dispatchParams({ type: 'page', payload: params.page - 1 });
+					dispatchParams({ type: 'page', payload: params.page > 0 ? params.page - 1 : params.page });
 				} else {
 					setForceUpdate(state => state + 1);
 				}

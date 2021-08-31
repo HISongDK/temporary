@@ -185,8 +185,8 @@ function Report() {
 	}
 	// 删改
 	let currentPublishStatus; // 判断启用禁用
-	async function updateNews(params) {
-		let res = await newsUpdate(params);
+	async function updateNews(queryParams) {
+		let res = await newsUpdate(queryParams);
 		console.log(res);
 		if (modalType === 'change') {
 			message.success('修改报道成功', 1);
@@ -195,6 +195,13 @@ function Report() {
 		} else if (modalType === 'delete') {
 			message.success('删除报道成功', 1);
 			setIsShowDelete(false);
+			if (dataSource.length === 1) {
+				setTimeout(() => {
+					dispatchParams({ type: 'page', payload: params.page > 0 ? params.page - 1 : params.page });
+				}, 5);
+
+				return;
+			}
 		} else if (modalType === 'publishStatus') {
 			console.log('首次无弹窗，是否执行');
 			if (currentPublishStatus === 1) {
