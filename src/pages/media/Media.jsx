@@ -122,6 +122,13 @@ function Media() {
 		} else if (addOrChange === 'delete') {
 			message.success('删除媒体成功', 1);
 			setIsShowDelete(false);
+			if (dataSource.length === 1) {
+				setTimeout(() => {
+					setPage(value => value > 0 ? value - 1 : value)
+				}, 5);
+
+				return;
+			}
 		}
 		setForceUpdate(count => count + 1);
 	}
