@@ -25,7 +25,9 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "pretty-quick": "pretty-quick --staged",
+    "prepare": "husky install"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +51,9 @@
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "babel-plugin-import": "^1.13.3",
     "circular-dependency-plugin": "^5.2.2",
+    "husky": "^7.0.4",
+    "prettier": "^2.5.0",
+    "pretty-quick": "^3.1.2",
     "simple-progress-webpack-plugin": "^2.0.0",
     "uglifyjs-webpack-plugin": "^2.2.0"
   }
