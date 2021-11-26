@@ -50,7 +50,7 @@ module.exports = {
           // 打压缩包
           new CompressionWebpackPlugin({
             algorithm: 'gzip',
-            test: /\.(js|css|json|txt|html|ico|svg)(\?.*)?$/i,
+            test: /\.js$|\.html$|\.css$/, // 匹配文件名
             threshold: 1024,
             minRatio: 0.8,
           }),
